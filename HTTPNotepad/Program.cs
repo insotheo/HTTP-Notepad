@@ -11,10 +11,11 @@ namespace HTTPNotepad
         {
             try
             {
-                using (Server server = new Server("http://localhost:5050/"))
+                using (Server server = new Server("http://localhost:5050/", "welcome"))
                 {
+                    server.PushPage("welcome", new Page(Path.Combine(Directory.GetCurrentDirectory(), ".content", "welcome.html")));
+
                     server.Start();
-                    server.PushPage("index", new Page(Path.Combine(Directory.GetCurrentDirectory(), ".content", "index.html")));
                     await server.Work();
                 }
             }

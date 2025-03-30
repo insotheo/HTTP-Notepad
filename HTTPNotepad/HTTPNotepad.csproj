@@ -6,13 +6,21 @@
 	<PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include=".content\index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include=".content\test.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include=".content\welcome.html">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Folder Include=".content\styles" />
+		<Content Include=".content\styles\welcome.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include=".content\styles\common.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Folder Include=".content\scripts" />
+		<Content Include=".content\scripts\welcome.containerController.js">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

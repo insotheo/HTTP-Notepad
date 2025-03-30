@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MyNotes: welcome</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles/welcome.css">
+        <link rel="stylesheet" href="styles/common.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1><i>Welcome to</i> <span style="color: #141414"><b>MyNotes</b></span></h1>
+            <form id="authForm">
+                <input type="text" id="username" placeholder="Username" minlength="3" maxlength="50" required>
+                <input type="password" id="password" placeholder="Password" minlength="8" required>
+                <button type="submit" style="width: 100%;">Log In</button>
+            </form>
+            <div class="toggle" onclick="toggleForm()">Don't have an account? Sign Up!</div>
+        </div>
+
+        <script src="scripts/welcome.containerController.js"></script>
+    </body>
+</html>
