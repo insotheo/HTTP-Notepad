@@ -12,7 +12,7 @@ namespace HTTPNotepad.Net
         HttpListener listener;
         Dictionary<String, Page> pages;
 
-        public Server(string prefix, int pagesNum)
+        public Server(string prefix)
         {
             listener = new HttpListener();
             listener.Prefixes.Add(prefix);
@@ -34,17 +34,34 @@ namespace HTTPNotepad.Net
 
                 using (Stream responseOut = response.OutputStream)
                 {
-                    if (!pages.ContainsKey(urlPath))
+                    if (pages.ContainsKey(urlPath)) //loading a page
+                    {
+                        response.ContentType = "text/html";
+                        await responseOut.WriteAsync(pages[urlPath].GetBuffer(), 0, pages[urlPath].GetLength());
+                        
+                    }
+
+                    else if(File.Exists(Path.Combine(Directory.GetCurrentDirectory(), ".content", urlPath.TrimStart('/')))) //loading resources
+                    {
+                        string path = Path.Combine(Directory.GetCurrentDirectory(), ".content", urlPath.TrimStart('/'));
+                        string extension = Path.GetExtension(urlPath.TrimStart('/'));
+                        response.ContentType = extension switch
+                        {
+                            ".css" => "text/css",
+                            ".js" => "application/javascript",
+                            _ => "application/octet-stream"
+                        };
+
+                        byte[] fileBuffer = await File.ReadAllBytesAsync(path);
+                        await responseOut.WriteAsync(fileBuffer, 0, fileBuffer.Length);
+                    }
+
+                    else //404
                     {
                         response.StatusCode = 404;
                         response.ContentType = "text/html";
                         byte[] buffer = Encoding.UTF8.GetBytes($"<!DOCTYPE html><html><head><title>PAGE NOT FOUND</title></head><body><h1>Error: 404</h1><p>Page \"{request.Url.ToString()}\" not found!</p></body></html>");
                         await responseOut.WriteAsync(buffer, 0, buffer.Length);
-                    }
-                    else
-                    {
-                        response.ContentType = "text/html";
-                        await responseOut.WriteAsync(pages[urlPath].GetBuffer(), 0, pages[urlPath].GetLength());
                     }
                 }
             }

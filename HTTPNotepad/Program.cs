@@ -11,7 +11,7 @@ namespace HTTPNotepad
         {
             try
             {
-                using (Server server = new Server("http://localhost:5050/", 1))
+                using (Server server = new Server("http://localhost:5050/"))
                 {
                     server.Start();
                     server.PushPage("index", new Page(Path.Combine(Directory.GetCurrentDirectory(), ".content", "index.html")));
