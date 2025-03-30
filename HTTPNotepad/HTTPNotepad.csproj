@@ -6,4 +6,10 @@
 	<PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include=".content\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
