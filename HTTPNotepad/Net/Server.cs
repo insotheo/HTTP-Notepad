@@ -52,16 +52,33 @@ namespace HTTPNotepad.Net
                         response.ContentLength64 = buffer.Length;
                         await responseOut.WriteAsync(buffer, 0, buffer.Length);
                     }
-
+                    else if(request.HttpMethod == "GET" && urlPath == "/login")
+                    {
+                        (HttpStatusCode code, string message) data = RequestHandler.HandleLogin(ref request);
+                        if (data.code != HttpStatusCode.OK)
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                        else
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
+                            response.ContentType = "application/json";
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                    }
 
                     else if (pages.ContainsKey(urlPath)) //loading a page
                     {
                         response.ContentType = "text/html";
                         response.ContentLength64 = pages[urlPath].GetLength();
                         await responseOut.WriteAsync(pages[urlPath].GetBuffer(), 0, pages[urlPath].GetLength());
-                        
                     }
-                    else if(String.IsNullOrEmpty(urlPath) && defaultPageName != null)
+                    else if (String.IsNullOrEmpty(urlPath) && defaultPageName != null)
                     {
                         response.StatusCode = (int)HttpStatusCode.Found;
                         response.RedirectLocation = listener.Prefixes.ElementAt(0).TrimEnd('/') + "/" + defaultPageName;

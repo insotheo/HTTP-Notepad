@@ -4,7 +4,31 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
     const isLogIn = authForm.querySelector('button').innerText === "Log In";
 
     if(isLogIn){
-        //TODO...
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const url = new URL("/login", window.location.origin);
+        url.searchParams.append("username", username);
+        url.searchParams.append("password", password);
+
+        try{
+            const response = await fetch(url, {
+                method: "GET",
+            });
+
+            if(response.ok){
+                const res = await response.json();
+                console.log("registration success: ", res);
+            }
+            else{
+                const res = await response.text();
+                console.error("Registration failed: ", res);
+                alert(res);
+            }
+        }
+        catch(error){
+            console.error("Error during login: ", error);
+        }
     }
     else{
         const username = document.getElementById('username').value;
@@ -25,7 +49,7 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
         };
 
         try{
-            const response = await fetch("http://localhost:5050/register", {
+            const response = await fetch("/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

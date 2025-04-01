@@ -49,6 +49,54 @@ namespace HTTPNotepad.Net
             return (HttpStatusCode.Created, "Success");
         }
 
+        public static (HttpStatusCode code, string message) HandleLogin(ref HttpListenerRequest rq)
+        {
+            string username = rq.QueryString["username"];
+            string inputPassword = PasswordsTool.Encrypt(rq.QueryString["password"]);
+
+            string name = "";
+
+            using (SQLiteConnection connection = new SQLiteConnection(dbString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand check = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username = @username", connection))
+                {
+                    check.Parameters.AddWithValue("@username", username);
+                    long userCount = (long)check.ExecuteScalar();
+
+                    if (userCount == 0)
+                    {
+                        return (HttpStatusCode.Conflict, "Incorrect username or password!");
+                    }
+                }
+
+                using (SQLiteCommand parse = new SQLiteCommand("SELECT Name, Username, Password FROM USERS WHERE Username = @username", connection))
+                {
+                    parse.Parameters.AddWithValue("@username", username);
+                    using (SQLiteDataReader reader = parse.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string password = reader["Password"].ToString();
+                            if(password != inputPassword)
+                            {
+                                return (HttpStatusCode.Conflict, "Incorrect username or password!");
+                            }
+                            password = null;
+                            inputPassword = null;
+
+                            name = reader["Name"].ToString();
+                        }
+                    }
+                }
+            }
+
+            var dbg = new { name = name };
+
+            return (HttpStatusCode.OK, JsonSerializer.Serialize(dbg));
+        }
+
         private static string parseBody(Stream input, Encoding encoding)
         {
             string body;
