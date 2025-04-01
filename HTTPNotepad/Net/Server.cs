@@ -35,9 +35,26 @@ namespace HTTPNotepad.Net
                 HttpListenerResponse response = ctx.Response;
                 string urlPath = request.Url.AbsolutePath.TrimEnd('/');
 
+                response.Headers.Add("Access-Control-Allow-Origin", "*");
+                response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+                response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
+
+                //Console.WriteLine($"Request from: {urlPath}");
+
                 using (Stream responseOut = response.OutputStream)
                 {
-                    if (pages.ContainsKey(urlPath)) //loading a page
+                    //Handling requests
+                    if(request.HttpMethod == "POST" && urlPath == "/register")
+                    {
+                        (HttpStatusCode code, string message) data = RequestHandler.HandleRegistration(ref request);
+                        byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                        response.StatusCode = (int)data.code;
+                        response.ContentLength64 = buffer.Length;
+                        await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                    }
+
+
+                    else if (pages.ContainsKey(urlPath)) //loading a page
                     {
                         response.ContentType = "text/html";
                         response.ContentLength64 = pages[urlPath].GetLength();

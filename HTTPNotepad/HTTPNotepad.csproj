@@ -17,10 +17,22 @@
 		<Content Include=".content\styles\common.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Folder Include=".content\scripts" />
 		<Content Include=".content\scripts\welcome.containerController.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include=".content\scripts\welcome.loginController.js">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Include=".server\my_notes.db">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
 	</ItemGroup>
 
 </Project>
