@@ -1,3 +1,18 @@
+const userCookieName = "MN_USER_INIT_DATA";
+
+function goHomePage(){
+    location.replace("/home");
+}
+
+window.onload = function (event) {
+    event.preventDefault();
+
+    var data = getCookie(userCookieName);
+    if(data != null){
+        goHomePage();                
+    }
+}
+
 document.getElementById("authForm").addEventListener("submit", async function(event) {
     event.preventDefault();
     
@@ -19,6 +34,8 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
             if(response.ok){
                 const res = await response.json();
                 console.log("registration success: ", res);
+                setCookie(userCookieName, {username: username, name: res.name}, 7);
+                goHomePage();
             }
             else{
                 const res = await response.text();
@@ -60,6 +77,8 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
             if(response.ok){
                 const res = await response.text();
                 console.log("registration success: ", res);
+                setCookie(userCookieName, {username: username, name: name}, 7);
+                goHomePage();
             }
             else{
                 const res = await response.text();

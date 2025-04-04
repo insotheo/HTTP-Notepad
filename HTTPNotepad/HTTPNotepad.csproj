@@ -23,6 +23,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Include=".content\scripts\tools.js">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	  <None Include=".content\scripts\welcome.loginController.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
