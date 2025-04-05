@@ -20,8 +20,9 @@ namespace HTTPNotepad.Net
             string name = data["name"];
             string username = data["username"];
             string password = PasswordsTool.Encrypt(data["password"]);
+            long counter = 0;
 
-            using(SQLiteConnection connection = new SQLiteConnection(dbString))
+            using (SQLiteConnection connection = new SQLiteConnection(dbString))
             {
                 connection.Open();
 
@@ -36,15 +37,23 @@ namespace HTTPNotepad.Net
                     }
                 }
 
-                using(SQLiteCommand insert = new SQLiteCommand("INSERT INTO USERS (Username, Name, Password) VALUES (@username, @name, @pswrd)", connection))
+                using(SQLiteCommand count = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username <> NULL", connection))
+                {
+                    counter = (long)count.ExecuteScalar();
+                }
+
+                using(SQLiteCommand insert = new SQLiteCommand("INSERT INTO USERS (Username, Name, Password, NotesFileName) VALUES (@username, @name, @pswrd, @filename)", connection))
                 {
                     insert.Parameters.AddWithValue("@username", username);
                     insert.Parameters.AddWithValue("@name", name);
                     insert.Parameters.AddWithValue("@pswrd", password);
+                    insert.Parameters.AddWithValue("@filename", counter.ToString());
                     insert.ExecuteNonQuery();
                 }
 
             }
+
+            NotesController.CreateNote(Path.Combine(NotesController.Path, counter.ToString()));
 
             return (HttpStatusCode.Created, "Success");
         }

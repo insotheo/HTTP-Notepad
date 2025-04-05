@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MyNotes: home</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles/common.css">
+        <link rel="stylesheet" href="styles/home.css">
+        <script src="scripts/tools.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>MyNotes</h1>
+            <div class="profile-widget">
+                <div class="name" onclick="toggleAccountActionsMenu(event)">NAME</div>
+                <div class="context-menu" id="accountContextMenu">
+                    <button id="logout">Log Out</button>
+                    <button id="deleteMyAccount">Delete my account</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="notes-container">
+            <div class="add-note">
+                <button onclick="addNote()">Add note</button>
+            </div>
+            <div id="notesList"></div>
+        </div>
+        
+        <div class="overlay" id="overlay" onclick="closeFlowPanel()"></div>
+        <div class="flow-panel" id="flowPanel">
+            <h2>Edit note</h2>
+            <input type="text" id="noteTitle" placeholder="Title">
+            <textarea id="noteContent" placeholder="Content"></textarea>
+            <button id="saveNoteBtn" onclick="saveNote()">Save</button>
+            <button id="closeFlowPanel" onclick="closeFlowPanel()">Close</button>
+        </div>
+
+        <script src="scripts/home.controller.js"></script>
+    </body>
+</html>
