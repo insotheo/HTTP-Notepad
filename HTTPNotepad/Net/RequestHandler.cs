@@ -1,16 +1,57 @@
 ﻿using HTTPNotepad.Tools;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 
 namespace HTTPNotepad.Net
 {
     static class RequestHandler
     {
         private static string dbString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(), ".server", "my_notes.db")}";
+
+        public static (HttpStatusCode code, string message) HandlePostingNotes(ref HttpListenerRequest rq)
+        {
+            string body = parseBody(rq.InputStream, rq.ContentEncoding);
+            List<Net.Note> notes = JsonConvert.DeserializeObject<List<Net.Note>>(body);
+            string username = rq.QueryString["username"];
+            string filePath = "";
+
+            using (SQLiteConnection connection = new SQLiteConnection(dbString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand command = new SQLiteCommand("SELECT NotesFileName FROM USERS WHERE Username = @username", connection))
+                {
+                    command.Parameters.AddWithValue("@username", username);
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            filePath = Path.Combine(NotesController.Path, reader["NotesFileName"].ToString() + ".json");
+                        }
+                        else
+                        {
+                            return (HttpStatusCode.NotFound, "User not found.");
+                        }
+                    }
+                }
+            }
+
+            List<Tools.Note> serverNotes = new List<Tools.Note>();
+            foreach (Net.Note note in notes)
+            {
+                Tools.Note n = new Tools.Note(notes.IndexOf(note), note.title);
+                n.SetNote(note.title, note.content);
+                serverNotes.Add(n);
+            }
+
+            NotesController.WriteNotes(filePath, serverNotes);
+
+            return (HttpStatusCode.OK, "");
+        }
 
         public static (HttpStatusCode code, string message) HandleDeletingAccount(ref HttpListenerRequest rq)
         {
@@ -56,7 +97,7 @@ namespace HTTPNotepad.Net
             string username = rq.QueryString["username"];
             string name = rq.QueryString["name"];
 
-            List<Note> notes = new List<Note>();
+            List<Net.Note> notes = new List<Net.Note>();
             using (SQLiteConnection connection = new SQLiteConnection(dbString))
             {
                 connection.Open();
@@ -82,25 +123,30 @@ namespace HTTPNotepad.Net
                         if (reader.Read())
                         {
                             string pathToFile = Path.Combine(NotesController.Path, reader["NotesFileName"].ToString() + ".json");
-                            notes = NotesController.GetNotes(pathToFile);
+                            List<Tools.Note> serverNotes = NotesController.GetNotes(pathToFile);
+                            foreach(Tools.Note note in serverNotes)
+                            {
+                                notes.Add(new Net.Note() { title = note.Title, content = note.Content });
+                            }
                         }
                     }
                 }
             }
 
-            return (HttpStatusCode.OK, JsonSerializer.Serialize(notes));
+            return (HttpStatusCode.OK, JsonConvert.SerializeObject(notes));
         }
 
         public static (HttpStatusCode code, string message) HandleRegistration(ref HttpListenerRequest rq)
         {
             string body = parseBody(rq.InputStream, rq.ContentEncoding);
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(body);
+            var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(body);
 
             string name = data["name"];
             string username = data["username"];
             string password = PasswordsTool.Encrypt(data["password"]);
             long counter = 0;
 
+            string filename = "";
             using (SQLiteConnection connection = new SQLiteConnection(dbString))
             {
                 connection.Open();
@@ -116,7 +162,7 @@ namespace HTTPNotepad.Net
                     }
                 }
 
-                using (SQLiteCommand count = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username <> NULL", connection))
+                using (SQLiteCommand count = new SQLiteCommand("SELECT COUNT(*) FROM USERS", connection))
                 {
                     counter = (long)count.ExecuteScalar();
                 }
@@ -126,13 +172,22 @@ namespace HTTPNotepad.Net
                     insert.Parameters.AddWithValue("@username", username);
                     insert.Parameters.AddWithValue("@name", name);
                     insert.Parameters.AddWithValue("@pswrd", password);
-                    insert.Parameters.AddWithValue("@filename", counter.ToString());
+                    string username2 = username;
+                    foreach(char c in Path.GetInvalidFileNameChars())
+                    {
+                        if (username2.Contains(c))
+                        {
+                            username2 = username2.Replace(c.ToString(), "");
+                        }
+                    }
+                    filename = username2 + "_" + counter.ToString();
+                    insert.Parameters.AddWithValue("@filename", filename);
                     insert.ExecuteNonQuery();
                 }
 
             }
 
-            NotesController.CreateNote(Path.Combine(NotesController.Path, counter.ToString()));
+            NotesController.CreateNote(Path.Combine(NotesController.Path, filename + ".json"));
 
             return (HttpStatusCode.Created, "Success");
         }
@@ -182,7 +237,7 @@ namespace HTTPNotepad.Net
 
             var dbg = new { name = name };
 
-            return (HttpStatusCode.OK, JsonSerializer.Serialize(dbg));
+            return (HttpStatusCode.OK, System.Text.Json.JsonSerializer.Serialize(dbg));
         }
 
         private static string parseBody(Stream input, Encoding encoding)

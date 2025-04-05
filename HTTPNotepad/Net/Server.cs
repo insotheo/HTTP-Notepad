@@ -101,6 +101,17 @@ namespace HTTPNotepad.Net
                             await responseOut.WriteAsync(buffer, 0, buffer.Length);
                         }
                     }
+                    else if(request.HttpMethod == "POST" && urlPath == "/post_notes")
+                    {
+                        (HttpStatusCode code, string message) data = RequestHandler.HandlePostingNotes(ref request);
+                        if (data.code != HttpStatusCode.OK)
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                    }
 
                     else if (pages.ContainsKey(urlPath)) //loading a page
                     {
@@ -118,7 +129,6 @@ namespace HTTPNotepad.Net
                         response.ContentLength64 = buffer.Length;
                         await responseOut.WriteAsync(buffer, 0, buffer.Length);
                     }
-
                     else if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), ".content", urlPath.TrimStart('/')))) //loading resources
                     {
                         string path = Path.Combine(Directory.GetCurrentDirectory(), ".content", urlPath.TrimStart('/'));

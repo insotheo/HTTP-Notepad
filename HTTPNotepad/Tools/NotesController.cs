@@ -71,18 +71,13 @@ namespace HTTPNotepad.Tools
             }
         }
 
-        public static Note GetNote(long uuid, string p)
+        public static async void WriteNotes(string p, List<Note> notes)
         {
-            List<Note> notes = GetNotes(p);
-            foreach (Note note in notes)
+            if (!File.Exists(p))
             {
-                if (note.UUID == uuid)
-                {
-                    return note;
-                }
+                CreateNote(p);
             }
-            return null;
+            await File.WriteAllTextAsync(p, Newtonsoft.Json.JsonConvert.SerializeObject(notes));
         }
-
     }
 }

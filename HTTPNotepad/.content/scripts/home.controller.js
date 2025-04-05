@@ -24,7 +24,7 @@ window.onload = async function(event){
         
         if(response.ok){
             const res = await response.json();
-            user.notes = JSON.parse(res);
+            user.notes = res;
             console.log("Getting data success!");
         } else{
             const res = await response.text();
@@ -34,6 +34,8 @@ window.onload = async function(event){
     } catch(error){
         console.error("Error during getting user data: ", error);
     }
+
+    renderNotes();
 }
 
 window.onclick = function(event) {
@@ -42,6 +44,31 @@ window.onclick = function(event) {
         contextMenu.style.display = 'none';
     }
 };
+
+async function sync() {
+    try{
+        const data = user.notes;
+        const url = new URL("/post_notes", window.location.origin);
+        url.searchParams.append("username", user.username);
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+        });
+
+        if(!response.ok){
+            const res = await response.text();
+            console.error("Syncing failed: ", res);
+            alert(res);
+        }
+
+    } catch(error){
+        console.error("Error during syncing: ", error);
+    }
+}
 
 function logout(){
     deleteCookie("MN_USER_INIT_DATA");
@@ -85,7 +112,7 @@ function toggleAccountActionsMenu(event){
 function closeFlowPanel(){
     document.getElementById('flowPanel').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
-    currentNoteIndex = null;
+    currentIndex = null;
     document.getElementById('noteTitle').value = '';
     document.getElementById('noteContent').value = '';
 }
@@ -116,6 +143,7 @@ function renderNotes(){
 function removeNote(index){
     user.notes.splice(index, 1);
     renderNotes();
+    sync();
 }
 
 function editNote(index){
@@ -128,8 +156,12 @@ function editNote(index){
 }
 
 function saveNote(){
-    const title = document.getElementById("noteTitle").value;
+    let title = document.getElementById("noteTitle").value;
     const content = document.getElementById("noteContent").value;
+
+    if(title == null || title === ""){
+        title = "Untitled";
+    }
 
     if(currentIndex != null){
         user.notes[currentIndex] = {title, content};
@@ -139,10 +171,12 @@ function saveNote(){
 
     closeFlowPanel();
     renderNotes();
+    sync();
 }
 
 function addNote(){
     const note = {title: "New title", content: ""};
-    user.notes.push(note);
+    user.notes.unshift(note);
     renderNotes();
+    sync();
 }
