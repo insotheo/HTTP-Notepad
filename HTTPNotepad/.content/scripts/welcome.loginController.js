@@ -34,7 +34,7 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
             if(response.ok){
                 const res = await response.json();
                 console.log("registration success: ", res);
-                setCookie(userCookieName, {username: username, name: res.name}, 7);
+                setCookie(userCookieName, JSON.stringify({username: username, name: res.name}), 7);
                 goHomePage();
             }
             else{
@@ -77,7 +77,7 @@ document.getElementById("authForm").addEventListener("submit", async function(ev
             if(response.ok){
                 const res = await response.text();
                 console.log("registration success: ", res);
-                setCookie(userCookieName, {username: username, name: name}, 7);
+                setCookie(userCookieName, JSON.stringify({username: username, name: name}), 7);
                 goHomePage();
             }
             else{

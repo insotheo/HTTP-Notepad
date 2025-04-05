@@ -12,6 +12,85 @@ namespace HTTPNotepad.Net
     {
         private static string dbString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(), ".server", "my_notes.db")}";
 
+        public static (HttpStatusCode code, string message) HandleDeletingAccount(ref HttpListenerRequest rq)
+        {
+            string username = rq.QueryString["username"];
+            string password = PasswordsTool.Encrypt(rq.QueryString["password"]);
+
+            string filePath = "";
+            using(SQLiteConnection connection = new SQLiteConnection(dbString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand check = new SQLiteCommand("SELECT Password, NotesFileName FROM USERS WHERE Username = @username", connection))
+                {
+                    check.Parameters.AddWithValue("@username", username);
+                    using (SQLiteDataReader reader = check.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            return (HttpStatusCode.Conflict, $"User with username \"{username}\" not found!");
+                        }
+                        if (password != reader["Password"].ToString())
+                        {
+                            return (HttpStatusCode.Conflict, "Incorrect password!");
+                        }
+                        filePath = Path.Combine(NotesController.Path, reader["NotesFileName"].ToString() + ".json");
+                    }
+                }
+
+                using (SQLiteCommand delete = new SQLiteCommand("DELETE FROM USERS WHERE Username = @username", connection))
+                {
+                    delete.Parameters.AddWithValue("@username", username);
+                    delete.ExecuteNonQuery();
+                }
+            }
+
+            File.Delete(filePath);
+
+            return (HttpStatusCode.OK, "");
+        }
+
+        public static (HttpStatusCode code, string message) HandleGettingData(ref HttpListenerRequest rq)
+        {
+            string username = rq.QueryString["username"];
+            string name = rq.QueryString["name"];
+
+            List<Note> notes = new List<Note>();
+            using(SQLiteConnection connection = new SQLiteConnection(dbString))
+            {
+                connection.Open();
+
+                using(SQLiteCommand command = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username = @username AND Name = @name", connection))
+                {
+                    command.Parameters.AddWithValue("@username", username);
+                    command.Parameters.AddWithValue("@name", name);
+
+                    long count = (long)command.ExecuteScalar();
+
+                    if(count == 0)
+                    {
+                        return (HttpStatusCode.Conflict, "No user found!");
+                    }
+                }
+
+                using (SQLiteCommand command = new SQLiteCommand("SELECT NotesFileName FROM USERS Where Username = @username", connection))
+                {
+                    command.Parameters.AddWithValue("@username", username);
+                    using(SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string pathToFile = Path.Combine(NotesController.Path, reader["NotesFileName"].ToString() + ".json");
+                            notes = NotesController.GetNotes(pathToFile);
+                        }
+                    }
+                }
+            }
+
+            return (HttpStatusCode.OK, JsonSerializer.Serialize(notes));
+        }
+
         public static (HttpStatusCode code, string message) HandleRegistration(ref HttpListenerRequest rq)
         {
             string body = parseBody(rq.InputStream, rq.ContentEncoding);

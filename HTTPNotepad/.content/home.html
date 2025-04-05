@@ -12,10 +12,10 @@
         <header>
             <h1>MyNotes</h1>
             <div class="profile-widget">
-                <div class="name" onclick="toggleAccountActionsMenu(event)">NAME</div>
+                <div class="name" id="name" onclick="toggleAccountActionsMenu(event)">NAME</div>
                 <div class="context-menu" id="accountContextMenu">
-                    <button id="logout">Log Out</button>
-                    <button id="deleteMyAccount">Delete my account</button>
+                    <button onclick="logout()" id="logout">Log Out</button>
+                    <button onclick="deleteAccount()" id="deleteMyAccount">Delete my account</button>
                 </div>
             </div>
         </header>

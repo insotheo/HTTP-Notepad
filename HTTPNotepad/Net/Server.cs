@@ -36,7 +36,7 @@ namespace HTTPNotepad.Net
                 string urlPath = request.Url.AbsolutePath.TrimEnd('/');
 
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
-                response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+                response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
                 response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
 
                 //Console.WriteLine($"Request from: {urlPath}");
@@ -68,6 +68,36 @@ namespace HTTPNotepad.Net
                             response.StatusCode = (int)data.code;
                             response.ContentLength64 = buffer.Length;
                             response.ContentType = "application/json";
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                    }
+                    else if(request.HttpMethod == "GET" && urlPath == "/get_data")
+                    {
+                        (HttpStatusCode code, string message) data = RequestHandler.HandleGettingData(ref request);
+                        if(data.code != HttpStatusCode.OK)
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                        else
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
+                            response.ContentType = "application/json";
+                            await responseOut.WriteAsync(buffer, 0, buffer.Length);
+                        }
+                    }
+                    else if(request.HttpMethod == "DELETE" && urlPath == "/delete_account")
+                    {
+                        (HttpStatusCode code, string message) data = RequestHandler.HandleDeletingAccount(ref request);
+                        if (data.code != HttpStatusCode.OK)
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(data.message);
+                            response.StatusCode = (int)data.code;
+                            response.ContentLength64 = buffer.Length;
                             await responseOut.WriteAsync(buffer, 0, buffer.Length);
                         }
                     }
