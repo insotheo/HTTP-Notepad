@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using HTTPNotepad.Tools;
+using System.Collections.Generic;
+using System.Data.SQLite;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.Data.SQLite;
-using HTTPNotepad.Tools;
 
 namespace HTTPNotepad.Net
 {
@@ -18,7 +18,7 @@ namespace HTTPNotepad.Net
             string password = PasswordsTool.Encrypt(rq.QueryString["password"]);
 
             string filePath = "";
-            using(SQLiteConnection connection = new SQLiteConnection(dbString))
+            using (SQLiteConnection connection = new SQLiteConnection(dbString))
             {
                 connection.Open();
 
@@ -57,18 +57,18 @@ namespace HTTPNotepad.Net
             string name = rq.QueryString["name"];
 
             List<Note> notes = new List<Note>();
-            using(SQLiteConnection connection = new SQLiteConnection(dbString))
+            using (SQLiteConnection connection = new SQLiteConnection(dbString))
             {
                 connection.Open();
 
-                using(SQLiteCommand command = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username = @username AND Name = @name", connection))
+                using (SQLiteCommand command = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username = @username AND Name = @name", connection))
                 {
                     command.Parameters.AddWithValue("@username", username);
                     command.Parameters.AddWithValue("@name", name);
 
                     long count = (long)command.ExecuteScalar();
 
-                    if(count == 0)
+                    if (count == 0)
                     {
                         return (HttpStatusCode.Conflict, "No user found!");
                     }
@@ -77,7 +77,7 @@ namespace HTTPNotepad.Net
                 using (SQLiteCommand command = new SQLiteCommand("SELECT NotesFileName FROM USERS Where Username = @username", connection))
                 {
                     command.Parameters.AddWithValue("@username", username);
-                    using(SQLiteDataReader reader = command.ExecuteReader())
+                    using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
@@ -110,18 +110,18 @@ namespace HTTPNotepad.Net
                     check.Parameters.AddWithValue("@username", username);
                     long userCount = (long)check.ExecuteScalar();
 
-                    if(userCount > 0)
+                    if (userCount > 0)
                     {
                         return (HttpStatusCode.Conflict, $"User with username \"{username}\" already exists!");
                     }
                 }
 
-                using(SQLiteCommand count = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username <> NULL", connection))
+                using (SQLiteCommand count = new SQLiteCommand("SELECT COUNT(*) FROM USERS Where Username <> NULL", connection))
                 {
                     counter = (long)count.ExecuteScalar();
                 }
 
-                using(SQLiteCommand insert = new SQLiteCommand("INSERT INTO USERS (Username, Name, Password, NotesFileName) VALUES (@username, @name, @pswrd, @filename)", connection))
+                using (SQLiteCommand insert = new SQLiteCommand("INSERT INTO USERS (Username, Name, Password, NotesFileName) VALUES (@username, @name, @pswrd, @filename)", connection))
                 {
                     insert.Parameters.AddWithValue("@username", username);
                     insert.Parameters.AddWithValue("@name", name);
@@ -167,7 +167,7 @@ namespace HTTPNotepad.Net
                         if (reader.Read())
                         {
                             string password = reader["Password"].ToString();
-                            if(password != inputPassword)
+                            if (password != inputPassword)
                             {
                                 return (HttpStatusCode.Conflict, "Incorrect username or password!");
                             }
@@ -188,7 +188,7 @@ namespace HTTPNotepad.Net
         private static string parseBody(Stream input, Encoding encoding)
         {
             string body;
-            using(StreamReader reader = new StreamReader(input, encoding))
+            using (StreamReader reader = new StreamReader(input, encoding))
             {
                 body = reader.ReadToEnd();
             }

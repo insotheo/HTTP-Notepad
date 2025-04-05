@@ -1,8 +1,8 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Collections.Generic;
-using System.Text.Json;
+using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace HTTPNotepad.Tools
 {
@@ -24,7 +24,7 @@ namespace HTTPNotepad.Tools
 
                 using (SQLiteCommand command = new SQLiteCommand("SELECT NotesFileName FROM USERS", connection))
                 {
-                    using(SQLiteDataReader reader = command.ExecuteReader())
+                    using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -34,7 +34,7 @@ namespace HTTPNotepad.Tools
                 }
             }
 
-            foreach(string p in paths)
+            foreach (string p in paths)
             {
                 CreateNote(p);
             }
@@ -61,9 +61,9 @@ namespace HTTPNotepad.Tools
             {
                 return new List<Note>();
             }
-            using(FileStream note = File.OpenRead(p))
+            using (FileStream note = File.OpenRead(p))
             {
-                using(StreamReader reader = new StreamReader(note))
+                using (StreamReader reader = new StreamReader(note))
                 {
                     string content = reader.ReadToEnd();
                     return JsonSerializer.Deserialize<List<Note>>(content);
@@ -74,9 +74,9 @@ namespace HTTPNotepad.Tools
         public static Note GetNote(long uuid, string p)
         {
             List<Note> notes = GetNotes(p);
-            foreach(Note note in notes)
+            foreach (Note note in notes)
             {
-                if(note.UUID == uuid)
+                if (note.UUID == uuid)
                 {
                     return note;
                 }

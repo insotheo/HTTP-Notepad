@@ -44,7 +44,7 @@ namespace HTTPNotepad.Net
                 using (Stream responseOut = response.OutputStream)
                 {
                     //Handling requests
-                    if(request.HttpMethod == "POST" && urlPath == "/register")
+                    if (request.HttpMethod == "POST" && urlPath == "/register")
                     {
                         (HttpStatusCode code, string message) data = RequestHandler.HandleRegistration(ref request);
                         byte[] buffer = Encoding.UTF8.GetBytes(data.message);
@@ -52,7 +52,7 @@ namespace HTTPNotepad.Net
                         response.ContentLength64 = buffer.Length;
                         await responseOut.WriteAsync(buffer, 0, buffer.Length);
                     }
-                    else if(request.HttpMethod == "GET" && urlPath == "/login")
+                    else if (request.HttpMethod == "GET" && urlPath == "/login")
                     {
                         (HttpStatusCode code, string message) data = RequestHandler.HandleLogin(ref request);
                         if (data.code != HttpStatusCode.OK)
@@ -71,10 +71,10 @@ namespace HTTPNotepad.Net
                             await responseOut.WriteAsync(buffer, 0, buffer.Length);
                         }
                     }
-                    else if(request.HttpMethod == "GET" && urlPath == "/get_data")
+                    else if (request.HttpMethod == "GET" && urlPath == "/get_data")
                     {
                         (HttpStatusCode code, string message) data = RequestHandler.HandleGettingData(ref request);
-                        if(data.code != HttpStatusCode.OK)
+                        if (data.code != HttpStatusCode.OK)
                         {
                             byte[] buffer = Encoding.UTF8.GetBytes(data.message);
                             response.StatusCode = (int)data.code;
@@ -90,7 +90,7 @@ namespace HTTPNotepad.Net
                             await responseOut.WriteAsync(buffer, 0, buffer.Length);
                         }
                     }
-                    else if(request.HttpMethod == "DELETE" && urlPath == "/delete_account")
+                    else if (request.HttpMethod == "DELETE" && urlPath == "/delete_account")
                     {
                         (HttpStatusCode code, string message) data = RequestHandler.HandleDeletingAccount(ref request);
                         if (data.code != HttpStatusCode.OK)
